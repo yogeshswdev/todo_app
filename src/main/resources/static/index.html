@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3), transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.3), transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(72, 149, 239, 0.3), transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .top-info-widget {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2;
+            min-width: 240px;
+            max-width: 320px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            box-shadow: 0 8px 24px rgba(20, 20, 60, 0.25);
+        }
+
+        .top-info-time {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .top-info-weather {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.4;
+        }
+
+        .top-info-meta {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 4px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .auth-screen {
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .auth-form {
+            margin: 20px auto 10px;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .auth-message {
+            margin-top: 14px;
+            min-height: 22px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        .user-session {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .current-user {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .input-section {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            flex: 1;
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="password"]::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: rgba(138, 43, 226, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(138, 43, 226, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .filter-section {
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: rgba(138, 43, 226, 0.4);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .todos-section {
+            padding: 30px;
+            min-height: 300px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 20px rgba(138, 43, 226, 0.2);
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .todo-item.completed {
+            background: rgba(255, 255, 255, 0.05);
+            opacity: 0.6;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            cursor: pointer;
+            margin-top: 2px;
+            accent-color: #8a2be2;
+        }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .todo-item.completed .todo-title {
+            text-decoration: line-through;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .todo-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .todo-item.completed .todo-description {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .todo-date {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 5px;
+        }
+
+        .delete-btn {
+            padding: 8px 16px;
+            background: rgba(220, 53, 69, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 14px;
+            min-width: auto;
+        }
+
+        .delete-btn:hover {
+            background: rgba(220, 53, 69, 0.5);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .clear-completed-btn {
+            background: rgba(220, 53, 69, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .clear-completed-btn:hover {
+            background: rgba(220, 53, 69, 0.5);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.4;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+        }
+
+        .empty-state h3 {
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            padding: 20px 30px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-info-widget">
+        <div class="top-info-time" id="dateTimeDisplay">Loading date & time...</div>
+        <div class="top-info-weather" id="weatherDisplay">Loading weather...</div>
+        <div class="top-info-meta" id="weatherMeta"></div>
+    </div>
+
+    <div class="container" id="authContainer">
+        <div class="header">
+            <h1>🔐 Login</h1>
+            <p>Login, register, or continue as guest</p>
+        </div>
+
+        <div class="auth-screen">
+            <div class="auth-form">
+                <input type="text" id="authUsername" placeholder="Username" />
+                <input type="password" id="authPassword" placeholder="Password" />
+            </div>
+            <div class="auth-actions">
+                <button onclick="loginUser()">Login</button>
+                <button onclick="registerUser()">Register</button>
+                <button onclick="resetPassword()">Forgot Password / Reset</button>
+                <button onclick="continueAsGuest()">Continue as Guest</button>
+            </div>
+            <div class="auth-message" id="authMessage"></div>
+        </div>
+    </div>
+
+    <div class="container" id="appContainer" style="display: none;">
+        <div class="header">
+            <h1>📝 My Todo App</h1>
+            <p>Stay organized and productive</p>
+            <div class="user-session">
+                <button onclick="logoutUser()">Logout</button>
+                <div class="current-user" id="currentUserDisplay">Logged in as: -</div>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="todoTitle" placeholder="What needs to be done?" />
+                <button onclick="addTodo()">Add Todo</button>
+            </div>
+            <textarea id="todoDescription" placeholder="Description (optional)"></textarea>
+        </div>
+
+        <div class="filter-section">
+            <button class="filter-btn active" onclick="filterTodos('all', this)">All</button>
+            <button class="filter-btn" onclick="filterTodos('active', this)">Active</button>
+            <button class="filter-btn" onclick="filterTodos('completed', this)">Completed</button>
+            <button class="clear-completed-btn" onclick="clearCompleted()">Clear Completed</button>
+        </div>
+
+        <div class="todos-section" id="todosContainer">
+            <div class="empty-state">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <h3>No todos yet!</h3>
+                <p>Add a new todo to get started</p>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="activeCount">0</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="completedCount">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/todos';
+        const AUTH_API_URL = '/api/auth';
+        const DEFAULT_LATITUDE = 28.6139;
+        const DEFAULT_LONGITUDE = 77.2090;
+        let currentFilter = 'all';
+        let currentUser = '';
+
+        function updateDateTime() {
+            const dateTimeDisplay = document.getElementById('dateTimeDisplay');
+            const now = new Date();
+            const datePart = now.toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            const timePart = now.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            dateTimeDisplay.textContent = `${datePart} • ${timePart}`;
+        }
+
+        function weatherCodeToText(code) {
+            const weatherMap = {
+                0: 'Clear sky',
+                1: 'Mainly clear',
+                2: 'Partly cloudy',
+                3: 'Overcast',
+                45: 'Fog',
+                48: 'Depositing rime fog',
+                51: 'Light drizzle',
+                53: 'Moderate drizzle',
+                55: 'Dense drizzle',
+                56: 'Light freezing drizzle',
+                57: 'Dense freezing drizzle',
+                61: 'Slight rain',
+                63: 'Moderate rain',
+                65: 'Heavy rain',
+                66: 'Light freezing rain',
+                67: 'Heavy freezing rain',
+                71: 'Slight snowfall',
+                73: 'Moderate snowfall',
+                75: 'Heavy snowfall',
+                77: 'Snow grains',
+                80: 'Slight rain showers',
+                81: 'Moderate rain showers',
+                82: 'Violent rain showers',
+                85: 'Slight snow showers',
+                86: 'Heavy snow showers',
+                95: 'Thunderstorm',
+                96: 'Thunderstorm with slight hail',
+                99: 'Thunderstorm with heavy hail'
+            };
+
+            return weatherMap[code] || 'Unknown weather';
+        }
+
+        async function loadWeather(latitude, longitude, sourceLabel) {
+            const weatherDisplay = document.getElementById('weatherDisplay');
+            const weatherMeta = document.getElementById('weatherMeta');
+
+            try {
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code,wind_speed_10m&timezone=auto`;
+                const response = await fetch(weatherUrl);
+
+                if (!response.ok) {
+                    throw new Error('Weather API request failed');
+                }
+
+                const data = await response.json();
+                const current = data.current;
+                const units = data.current_units || {};
+
+                if (!current) {
+                    throw new Error('Weather data unavailable');
+                }
+
+                const weatherText = weatherCodeToText(current.weather_code);
+                const temperatureUnit = units.temperature_2m || '°C';
+                const windUnit = units.wind_speed_10m || 'km/h';
+
+                weatherDisplay.textContent = `${weatherText} • ${current.temperature_2m}${temperatureUnit} • Wind ${current.wind_speed_10m} ${windUnit}`;
+                weatherMeta.textContent = `Source: Open-Meteo (${sourceLabel})`;
+            } catch (error) {
+                weatherDisplay.textContent = 'Weather unavailable right now';
+                weatherMeta.textContent = 'Source: Open-Meteo';
+                console.error('Error loading weather:', error);
+            }
+        }
+
+        function initializeWeather() {
+            if (!navigator.geolocation) {
+                loadWeather(DEFAULT_LATITUDE, DEFAULT_LONGITUDE, 'default location');
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    loadWeather(position.coords.latitude, position.coords.longitude, 'your location');
+                },
+                () => {
+                    loadWeather(DEFAULT_LATITUDE, DEFAULT_LONGITUDE, 'default location');
+                },
+                {
+                    enableHighAccuracy: false,
+                    timeout: 10000,
+                    maximumAge: 300000
+                }
+            );
+        }
+
+        function getRequestHeaders(withJson = false) {
+            const headers = {};
+
+            if (currentUser) {
+                headers['X-User-Name'] = currentUser;
+            }
+
+            if (withJson) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            return headers;
+        }
+
+        function refreshCurrentUserDisplay() {
+            document.getElementById('currentUserDisplay').textContent = `Logged in as: ${currentUser}`;
+        }
+
+        function showAuthMessage(message, isError = true) {
+            const authMessage = document.getElementById('authMessage');
+            authMessage.textContent = message;
+            authMessage.style.color = isError ? '#ffb3b3' : '#b8f5b8';
+        }
+
+        function showApp() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            refreshCurrentUserDisplay();
+        }
+
+        function showAuth() {
+            document.getElementById('appContainer').style.display = 'none';
+            document.getElementById('authContainer').style.display = 'block';
+            document.getElementById('authPassword').value = '';
+            showAuthMessage('');
+        }
+
+        async function loginUser() {
+            const inputUser = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            if (!inputUser) {
+                alert('Please enter a username');
+                return;
+            }
+
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${AUTH_API_URL}/login`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(true),
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        username: inputUser,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAuthMessage(result.message || 'Login failed');
+                    return;
+                }
+
+                currentUser = result.username;
+                showApp();
+                await loadTodos();
+            } catch (error) {
+                showAuthMessage('Unable to login. Please try again.');
+                console.error('Error during login:', error);
+            }
+        }
+
+        async function registerUser() {
+            const inputUser = document.getElementById('authUsername').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            if (!inputUser) {
+                alert('Please enter a username');
+                return;
+            }
+
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${AUTH_API_URL}/register`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(true),
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        username: inputUser,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAuthMessage(result.message || 'Registration failed');
+                    return;
+                }
+
+                currentUser = result.username;
+                showAuthMessage('Registration successful', false);
+                showApp();
+                await loadTodos();
+            } catch (error) {
+                showAuthMessage('Unable to register. Please try again.');
+                console.error('Error during registration:', error);
+            }
+        }
+
+        async function continueAsGuest() {
+            try {
+                const response = await fetch(`${AUTH_API_URL}/guest`, {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAuthMessage(result.message || 'Unable to continue as guest');
+                    return;
+                }
+
+                currentUser = result.username;
+                showApp();
+                await loadTodos();
+            } catch (error) {
+                showAuthMessage('Unable to continue as guest. Please try again.');
+                console.error('Error continuing as guest:', error);
+            }
+        }
+
+        async function resetPassword() {
+            const inputUser = document.getElementById('authUsername').value.trim();
+            const newPassword = document.getElementById('authPassword').value.trim();
+
+            if (!inputUser) {
+                alert('Please enter your username');
+                return;
+            }
+
+            if (!newPassword) {
+                alert('Please enter a new password');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${AUTH_API_URL}/reset-password`, {
+                    method: 'POST',
+                    headers: getRequestHeaders(true),
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        username: inputUser,
+                        password: newPassword
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    showAuthMessage(result.message || 'Password reset failed');
+                    return;
+                }
+
+                showAuthMessage(result.message || 'Password reset successful. Please login.', false);
+            } catch (error) {
+                showAuthMessage('Unable to reset password. Please try again.');
+                console.error('Error resetting password:', error);
+            }
+        }
+
+        async function logoutUser() {
+            try {
+                await fetch(`${AUTH_API_URL}/logout`, {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+            } catch (error) {
+                console.error('Error during logout:', error);
+            }
+
+            currentUser = '';
+            showAuth();
+        }
+
+        async function checkExistingSession() {
+            try {
+                const response = await fetch(`${AUTH_API_URL}/me`, {
+                    credentials: 'same-origin'
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success && result.username) {
+                    currentUser = result.username;
+                    showApp();
+                    await loadTodos();
+                    return;
+                }
+            } catch (error) {
+                console.error('Error checking session:', error);
+            }
+
+            showAuth();
+        }
+
+        // Load todos on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            initializeWeather();
+            checkExistingSession();
+
+            document.getElementById('authPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loginUser();
+                }
+            });
+
+            document.getElementById('authUsername').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    loginUser();
+                }
+            });
+
+            document.getElementById('todoTitle').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
+        });
+
+        async function loadTodos() {
+            try {
+                const response = await fetch(API_URL, {
+                    headers: getRequestHeaders(),
+                    credentials: 'same-origin'
+                });
+                const todos = await response.json();
+                displayTodos(todos);
+                updateStats(todos);
+            } catch (error) {
+                console.error('Error loading todos:', error);
+            }
+        }
+
+        async function addTodo() {
+            const title = document.getElementById('todoTitle').value.trim();
+            const description = document.getElementById('todoDescription').value.trim();
+
+            if (!title) {
+                alert('Please enter a todo title');
+                return;
+            }
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: getRequestHeaders(true),
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        title: title,
+                        description: description,
+                        completed: false
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('todoTitle').value = '';
+                    document.getElementById('todoDescription').value = '';
+                    loadTodos();
+                }
+            } catch (error) {
+                console.error('Error adding todo:', error);
+            }
+        }
+
+        async function toggleTodo(id) {
+            try {
+                const response = await fetch(`${API_URL}/${id}/toggle`, {
+                    method: 'PATCH',
+                    headers: getRequestHeaders(),
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    loadTodos();
+                }
+            } catch (error) {
+                console.error('Error toggling todo:', error);
+            }
+        }
+
+        async function deleteTodo(id) {
+            if (!confirm('Are you sure you want to delete this todo?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: getRequestHeaders(),
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    loadTodos();
+                }
+            } catch (error) {
+                console.error('Error deleting todo:', error);
+            }
+        }
+
+        async function clearCompleted() {
+            if (!confirm('Are you sure you want to delete all completed todos?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/completed`, {
+                    method: 'DELETE',
+                    headers: getRequestHeaders(),
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    loadTodos();
+                }
+            } catch (error) {
+                console.error('Error clearing completed todos:', error);
+            }
+        }
+
+        function displayTodos(todos) {
+            const container = document.getElementById('todosContainer');
+            
+            // Filter todos based on current filter
+            let filteredTodos = todos;
+            if (currentFilter === 'active') {
+                filteredTodos = todos.filter(todo => !todo.completed);
+            } else if (currentFilter === 'completed') {
+                filteredTodos = todos.filter(todo => todo.completed);
+            }
+
+            if (filteredTodos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                        </svg>
+                        <h3>No todos found!</h3>
+                        <p>${currentFilter === 'all' ? 'Add a new todo to get started' : 'No ' + currentFilter + ' todos'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredTodos.map(todo => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <input 
+                        type="checkbox" 
+                        class="checkbox" 
+                        ${todo.completed ? 'checked' : ''}
+                        onchange="toggleTodo(${todo.id})"
+                    />
+                    <div class="todo-content">
+                        <div class="todo-title">${escapeHtml(todo.title)}</div>
+                        ${todo.description ? `<div class="todo-description">${escapeHtml(todo.description)}</div>` : ''}
+                        <div class="todo-date">Created: ${formatDate(todo.createdAt)}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTodo(${todo.id})">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        function filterTodos(filter, buttonElement) {
+            currentFilter = filter;
+            
+            // Update active filter button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            buttonElement.classList.add('active');
+            
+            loadTodos();
+        }
+
+        function updateStats(todos) {
+            const total = todos.length;
+            const completed = todos.filter(todo => todo.completed).length;
+            const active = total - completed;
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('completedCount').textContent = completed;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
